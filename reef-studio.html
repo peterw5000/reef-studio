@@ -2265,10 +2265,10 @@ function amb(C){const sr=C.sampleRate,R=Math.random,
   // near(k): 1 at or inside the glass, about 0.5 in the front view, near 0 far away: fuller and brighter close up, quieter and muffled far off
   const near=k=>{const n=C.currentTime,m=Math.min(1,k*2);vol.gain.setTargetAtTime(0.4+0.9*k,n,0.25);tone.frequency.setTargetAtTime(1500+16500*m*m,n,0.25);};
   out.gain.value=0;return {out,bub,near};}
-function audioStart(){if(AC||AUTO)return;try{AC=new AudioContext();AM=amb(AC);AM.out.gain.linearRampToValueAtTime(muted?0:0.85,AC.currentTime+2.5);
+function audioStart(){if(AC||AUTO)return;try{AC=new AudioContext();AM=amb(AC);AM.out.gain.linearRampToValueAtTime(muted?0:0.6,AC.currentTime+2.5);
   (function nx(){if(AC.state==='running')AM.bub(AC.currentTime+0.05);setTimeout(nx,600+Math.random()*Math.random()*6000);})();}catch(e){}}
 addEventListener('pointerdown',()=>{if(AC&&AC.state==='suspended'&&!document.hidden)AC.resume();});document.addEventListener('visibilitychange',()=>{if(AC)document.hidden?AC.suspend():AC.resume();});
-function setMute(m){muted=m;LS('snd',m?'0':null);if(AM){AM.out.gain.cancelScheduledValues(0);AM.out.gain.setTargetAtTime(m?0:0.85,AC.currentTime,0.15);}$('mute').textContent=m?'🔇 Sound: off':'🔊 Sound: on';}
+function setMute(m){muted=m;LS('snd',m?'0':null);if(AM){AM.out.gain.cancelScheduledValues(0);AM.out.gain.setTargetAtTime(m?0:0.6,AC.currentTime,0.15);}$('mute').textContent=m?'🔇 Sound: off':'🔊 Sound: on';}
 setMute(muted);
 // touch swim: hold to move forward, slide to steer
 renderer.domElement.addEventListener('pointerdown',e=>{if(swim.on&&e.pointerType==='touch'){tp=[e.clientX,e.clientY];swim.keys.KeyW=true;}});

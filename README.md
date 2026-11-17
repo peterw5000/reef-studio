@@ -37,8 +37,8 @@ index.html?tank=home&view=showcase        start the showcase tour right away
 
 | | |
 |---|---|
-| ![Nano cube](.github/screenshots/nano.jpg) | ![Public exhibit gallery](.github/screenshots/exhibit-gallery.jpg) |
-| A 24 gallon nano cube | The public exhibit, seen from the gallery |
+| ![Up close in the home tank](.github/screenshots/reef-closeup.jpg) | ![Public exhibit gallery](.github/screenshots/exhibit-gallery.jpg) |
+| Up close in the 300 gallon home tank | The public exhibit, seen from the gallery |
 | ![Coral close-up](.github/screenshots/coral-closeup.jpg) | ![Swim mode](.github/screenshots/swim.jpg) |
 | A close-up of the rockwork | Swim mode |
 | ![Moonlight](.github/screenshots/night-moon.jpg) | ![Zoanthid colour morphs](.github/screenshots/zoa-morphs.jpg) |

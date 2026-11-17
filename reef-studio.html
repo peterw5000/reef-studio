@@ -2144,9 +2144,9 @@ controls.addEventListener('start',()=>{if(tour){tour=false;P.view='free';documen
 let tourShot=-1;
 const ease=u=>u*u*(3-2*u);
 const TOUR_ALL=[
-  {name:'establish',dur:12,fov:42,f:(u,c,t)=>{const d=frontDist();c.set(0,T.H*lerp(0.62,0.48,ease(u)),T.D/2+d*lerp(1.25,1.0,ease(u)));t.set(0,T.H*0.42,0);}},
-  {name:'pan',dur:14,fov:40,f:(u,c,t)=>{const d=frontDist(),x=lerp(-0.18,0.18,ease(u))*T.W;c.set(x,T.H*0.5,T.D/2+d*0.45);t.set(x,T.H*0.45,0);}},
-  {name:'lowpan',dur:12,fov:45,f:(u,c,t)=>{const x=lerp(0.22,-0.22,ease(u))*T.W;c.set(x,T.sandTop+0.06*T.sc,T.D/2+0.25*T.sc);t.set(x-T.W*0.1,T.sandTop+T.hw*0.3,0);}},
+  {name:'establish',dur:13,fov:42,f:(u,c,t)=>{const d=frontDist();c.set(0,T.H*lerp(0.47,0.44,ease(u)),T.D/2+d*lerp(0.84,0.74,ease(u)));t.set(0,T.H*0.36,0);}},
+  {name:'pan',dur:17,fov:40,f:(u,c,t)=>{const d=frontDist(),x=lerp(-0.18,0.18,ease(u))*T.W;c.set(x,T.H*0.45,T.D/2+d*0.45);t.set(x,T.H*0.38,0);}},
+  {name:'lowpan',dur:15,fov:45,f:(u,c,t)=>{const x=lerp(0.22,-0.22,ease(u))*T.W;c.set(x,T.sandTop+0.06*T.sc,T.D/2+0.25*T.sc);t.set(x-T.W*0.1,T.sandTop+T.hw*0.3,0);}},
   {name:'top',dur:12,fov:50,f:(u,c,t)=>{const x=lerp(-0.15,0.15,ease(u))*T.W;c.set(x,T.H+frontDist()*0.5,T.D*0.15);t.set(x*0.8,0,-T.D*0.05);}},
   {name:'school',dur:11,fov:42,pick:()=>fishes.filter(f=>f.grp),
     f:(u,c,t,s,dt)=>{const g=s.subject.grp,ctr=V();for(const m of g.members)ctr.add(m.p);ctr.multiplyScalar(1/g.members.length);
@@ -2158,23 +2158,24 @@ const TOUR_ALL=[
       _v.copy(f.p).add(s.off);
       if(u===0){c.copy(_v);t.copy(f.p);}else{c.lerp(_v,1-Math.exp(-dt*0.6));t.lerp(f.p,1-Math.exp(-dt*1.8));}}},
   {name:'glide',dur:14,fov:55,f:(u,c,t)=>{const x=lerp(-0.22,0.22,ease(u))*T.W;c.set(x,T.sandTop+T.hw*0.55,T.D*0.42);t.set(x+T.W*0.12,T.sandTop+T.hw*0.35,-T.D*0.3);}},
-  {name:'crab',dur:11,fov:34,pick:()=>crew.filter(c=>c.kind==='crab'),
-    f:(u,c,t,s)=>{const k=s.subject,a=lerp(-0.25,0.2,u),r=0.13*T.sc;c.set(k.p.x+Math.sin(a)*r,k.p.y+0.06*T.sc,k.p.z+Math.cos(a)*r);t.copy(k.p).add(V(0,k.size*0.3,0));}},
+  {name:'crab',dur:12,fov:15,pick:()=>{const a=crew.filter(c=>c.kind==='crab'),s=a.filter(c=>c.p.y<=T.sandTop+0.01&&c.p.z>-T.D*0.2);return s.length?s:a;},   // a hermit out on the open sand if there is one, watched through the front glass with a long lens from just above the sand
+    f:(u,c,t,s,dt)=>{const k=s.subject,m=T.W/2-0.3*T.sc;_v.copy(k.p).add(V(0,k.size*0.4,0));if(u===0)t.copy(_v);else t.lerp(_v,1-Math.exp(-dt*1.2));c.set(clamp(k.p.x+T.W*lerp(-0.03,0.03,u),-m,m),Math.max(k.p.y+0.02*T.sc,T.sandTop+0.05*T.sc),T.D/2+0.3*T.sc);}},
   {name:'clowns',dur:12,fov:46,pick:()=>fishes.filter(f=>f.sp.host),
     f:(u,c,t,s)=>{const h=s.subject.home,a=lerp(-0.15,0.35,u),r=0.3*T.sc;c.set(h.x+Math.sin(a)*r,h.y+0.07*T.sc,Math.min(h.z+Math.cos(a)*r,T.D/2+0.4));t.copy(h);}},
   {name:'lookup',dur:11,fov:60,f:(u,c,t)=>{c.set(0,T.sandTop+T.hw*0.3,T.D*0.25);t.set(T.W*0.05,lerp(T.sandTop+T.hw*0.35,T.surfY,ease(u)),lerp(-T.D*0.4,-T.D*0.05,ease(u)));}},
-  {name:'pullback',dur:14,fov:42,f:(u,c,t)=>{const d=frontDist(),k=ease(u);c.set(lerp(T.W*0.4,T.W*0.55,k),T.H*lerp(0.5,0.68,k),T.D/2+d*lerp(0.5,0.75,k));t.set(lerp(T.W*0.06,0,k),T.H*0.38,0);}},
-  // more variety, all from outside the glass: pans at other heights and across the back rockwork, an arc around one coral, a push-in to a close focus, a crane from the sand to the surface
-  {name:'panhigh',dur:14,fov:40,f:(u,c,t)=>{const x=lerp(0.3,-0.3,ease(u))*T.W;c.set(x,T.H*0.78,T.D/2+frontDist()*0.3);t.set(x-T.W*0.05,T.H*0.45,0);}},
-  {name:'panback',dur:15,fov:30,f:(u,c,t)=>{const x=lerp(-0.24,0.24,ease(u))*T.W;c.set(x,T.H*0.55,T.D/2+frontDist()*0.6);t.set(x,T.H*0.5,-T.D/2);}},
-  {name:'orbit',dur:14,fov:36,pick:()=>T.spot.length?T.spot:T.corals.filter(q=>q.z>-T.D*0.1&&(!T.ex||Math.abs(q.x)<T.W*0.28)),
-    f:(u,c,t,s)=>{const q=s.subject,r=T.D/2-q.z+0.3*T.sc,a=lerp(-0.75,0.75,ease(u));c.set(clamp(q.x+Math.sin(a)*r,-T.W*0.47,T.W*0.47),q.top+0.05*T.sc,Math.max(q.z+Math.cos(a)*r,T.D/2+0.14*T.sc));t.set(q.x,(q.y+q.top)/2,q.z);}},
-  {name:'pushin',dur:13,fov:34,pick:()=>T.spot.length?T.spot:T.corals.filter(q=>q.z>-T.D*0.1&&(!T.ex||Math.abs(q.x)<T.W*0.28&&q.y>T.sandTop+1.1)),
-    f:(u,c,t,s)=>{const q=s.subject,k=ease(u);c.set(q.x*lerp(0.7,1,k),lerp(T.H*0.5,q.top+0.04*T.sc,k),T.D/2+lerp(frontDist()*0.7,0.22*T.sc,k));t.set(q.x,(q.y+q.top)/2,q.z);}},
-  {name:'crane',dur:14,fov:44,f:(u,c,t)=>{const k=ease(u),x=T.W*0.2;c.set(x,lerp(T.sandTop+0.05*T.sc,T.H*0.9,k),T.D/2+0.5*T.sc);t.set(x-T.W*0.12,lerp(T.sandTop+T.hw*0.15,T.surfY-0.06*T.sc,k),-T.D*0.1);}},
+  {name:'pullback',dur:14,fov:42,f:(u,c,t)=>{const d=frontDist(),k=ease(u);c.set(lerp(T.W*0.34,T.W*0.42,k),T.H*lerp(0.44,0.47,k),T.D/2+d*lerp(0.46,0.52,k));t.set(lerp(T.W*0.06,0,k),T.H*0.33,0);}},
+  // the showcase is mostly slow pans; these are its other pans and its occasional accents
+  {name:'pan2',dur:17,fov:38,f:(u,c,t)=>{const x=lerp(0.2,-0.2,ease(u))*T.W;c.set(x,T.H*0.42,T.D/2+frontDist()*0.38);t.set(x,T.H*0.38,0);}},
+  {name:'lowpan2',dur:15,fov:45,f:(u,c,t)=>{const x=lerp(-0.22,0.22,ease(u))*T.W;c.set(x,T.sandTop+0.1*T.sc,T.D/2+0.3*T.sc);t.set(x+T.W*0.1,T.sandTop+T.hw*0.25,0);}},
+  {name:'stand',dur:11,fov:38,f:(u,c,t)=>{c.set(T.W*lerp(0.12,0.135,u),T.H*0.42,T.D/2+frontDist()*0.4);t.set(-T.W*0.03,T.H*0.38,0);}},
+  {name:'panback',dur:17,fov:30,f:(u,c,t)=>{const x=lerp(-0.24,0.24,ease(u))*T.W;c.set(x,T.H*0.55,T.D/2+frontDist()*0.6);t.set(x,T.H*0.5,-T.D/2);}},
+  {name:'orbit',dur:14,fov:36,pick:()=>T.spot.length?T.spot:T.corals.filter(q=>q.z>-T.D*0.1&&q.top<T.sandTop+T.hw*0.55&&(!T.ex||Math.abs(q.x)<T.W*0.28)),
+    f:(u,c,t,s)=>{const q=s.subject,r=T.D/2-q.z+0.3*T.sc,a=lerp(-0.33,0.33,ease(u));c.set(clamp(q.x+Math.sin(a)*r,-T.W*0.47,T.W*0.47),Math.min(q.top+0.05*T.sc,T.H*0.6),Math.max(q.z+Math.cos(a)*r,T.D/2+0.14*T.sc));t.set(q.x,(q.y+q.top)/2,q.z);}},
+  {name:'pushin',dur:13,fov:34,pick:()=>T.spot.length?T.spot:T.corals.filter(q=>q.z>-T.D*0.1&&(T.ex||q.top<T.sandTop+T.hw*0.55)&&(!T.ex||Math.abs(q.x)<T.W*0.28&&q.y>T.sandTop+1.1)),
+    f:(u,c,t,s)=>{const q=s.subject,k=ease(u);c.set(q.x*lerp(0.7,1,k),lerp(T.H*0.45,Math.min(q.top+0.04*T.sc,T.H*0.6),k),T.D/2+lerp(frontDist()*0.7,0.22*T.sc,k));t.set(q.x,(q.y+q.top)/2,q.z);}},
 ];
-// show order: pans stay the backbone (about 40%), with focus push-ins, orbits and glide / crane / establishing shots between them; no type twice in a row
-const TOUR_SETS={show:['establish','pan','pushin','panhigh','orbit','lowpan','crane','pushin','panback','orbit','lowpan','pullback','pushin','pan'],follow:['track','school','glide','crab','clowns','lookup']};
+// show order: nine slow pans in fifteen shots, with standing shots, a slow arc and a coral focus between them; cameras stay in the lower two thirds
+const TOUR_SETS={show:['establish','pan','lowpan','stand','pan2','panback','pushin','lowpan2','pan','orbit','panback','lowpan','stand','pan2','pullback'],follow:['track','school','glide','crab','clowns','lookup']};
 function updateTour(dt){
   const TOUR=TOUR_SETS[P.tourSet||'show'].map(n=>TOUR_ALL.find(s=>s.name===n));
   tourT+=dt;let sh=TOUR[tourShot];

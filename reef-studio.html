@@ -1280,12 +1280,14 @@ function makeCrab(style,size,R){
 }
 const _cu=V(),_cf=V(),_cx=V(),_cm=new THREE.Matrix4();
 function orientCrit(c,up,fwd){_cf.copy(fwd).addScaledVector(up,-fwd.dot(up)).normalize();_cx.crossVectors(up,_cf);_cm.makeBasis(_cx,up,_cf);c.g.quaternion.setFromRotationMatrix(_cm);}
-function groundAt(x,z){if(!(T&&T.groundH))return hmAt(x,z);const g=HMg,H=T.groundH,fx=clamp((x-g.x0)/g.cs-0.5,0,g.nx-1.001),fz=clamp((z-g.z0)/g.cs-0.5,0,g.nz-1.001),i=fx|0,j=fz|0,u=fx-i,k=j*g.nx+i;
+// CW: while the crew are updated, ground height comes from T.cw, a finer grid of the rock's true top surface (the fish grid is dilated and sits above it near edges)
+let CW=0;
+function groundAt(x,z){if(!(T&&T.groundH))return hmAt(x,z);const g=CW&&T.cw||HMg,H=g.H||T.groundH,fx=clamp((x-g.x0)/g.cs-0.5,0,g.nx-1.001),fz=clamp((z-g.z0)/g.cs-0.5,0,g.nz-1.001),i=fx|0,j=fz|0,u=fx-i,k=j*g.nx+i;
   return lerp(lerp(H[k],H[k+1],u),lerp(H[k+g.nx],H[k+g.nx+1],u),fz-j);}
 function hmNormal(x,z,e){_cu.set(groundAt(x-e,z)-groundAt(x+e,z),2*e,groundAt(x,z-e)-groundAt(x,z+e)).normalize();
   const h=Math.hypot(_cu.x,_cu.z);if(h>0.55){_cu.x*=0.55/h;_cu.z*=0.55/h;_cu.y=0.835;}return _cu;}
 function updateCrew(dt){
-  if(!T)return;const {W,D,sc,surfY,sandTop}=T,cam=camThreat();
+  if(!T)return;const {W,D,sc,surfY,sandTop}=T,cam=camThreat();CW=1;
   for(let i=0;i<crew.length;i++){const a=crew[i];if(a.kind!=='crab')continue;for(let j=i+1;j<crew.length;j++){const b=crew[j];if(b.kind!=='crab')continue;
     const dx=b.p.x-a.p.x,dz=b.p.z-a.p.z,d=Math.hypot(dx,dz),mn=(a.size+b.size)*0.75;if(d<mn&&d>1e-6){const k=(mn-d)*0.5/d;a.p.x-=dx*k;a.p.z-=dz*k;b.p.x+=dx*k;b.p.z+=dz*k;a.h+=0.02;b.h-=0.02;}}}
   for(const c of crew){const R=c.R;c.timer-=dt;
@@ -1325,6 +1327,7 @@ function updateCrew(dt){
       c.body.rotation.x=lerp(c.body.rotation.x,c.pause&&!hid?0.12+Math.sin(c.pick*2.1)*0.04:0,Math.min(1,dt*4));
       const k=hid?Math.min(1,dt*8):Math.min(1,dt*1.2);c.body.position.z=lerp(c.body.position.z,hid?-c.size*0.42:0,k);c.body.scale.setScalar(lerp(c.body.scale.x,hid?0.55:1,k));}
   }
+  CW=0;
 }
 
 const SANDS={
@@ -1462,7 +1465,13 @@ function build(){
   {let o=0;for(const g of rockGeos){const p=g.attributes.position,n=g.attributes.normal;RC.set(g.attributes.color.array,o*3);RA.set(g.userData.ao,o);for(let i=0;i<p.count;i++,o++){RX[o]=p.getX(i);RY[o]=p.getY(i);RZ[o]=p.getZ(i);NX[o]=n.getX(i);NY[o]=n.getY(i);NZ[o]=n.getZ(i);}}}
   let peakMax=sandTop+0.01;for(let i=0;i<rockVerts;i++)if(RY[i]>peakMax)peakMax=RY[i];
   T.rockN=rockGeos.length;T.rockVol=rockVol;
-  let RK=[];if(rockGeos.length){const m=new THREE.Mesh(mergeGeometries(rockGeos),MAT.rock);RK=m.geometry.attributes.color.array;m.castShadow=m.receiveShadow=true;group.add(m);rockGeos.forEach(g=>g.dispose());}
+  let RK=[];if(rockGeos.length){const m=new THREE.Mesh(mergeGeometries(rockGeos),MAT.rock);RK=m.geometry.attributes.color.array;m.castShadow=m.receiveShadow=true;group.add(m);
+    // crew height grid: the rock triangles rasterised from above at twice the height-map resolution (highest surface under each sample point)
+    {const g=HMg,cs=g.cs/2,nx=g.nx*2,nz=g.nz*2,Hc=new Float32Array(nx*nz).fill(sandTop),ix=m.geometry.index.array;T.cw={cs,nx,nz,x0:g.x0,z0:g.z0,H:Hc};
+      for(let t=0;t<ix.length;t+=3){const a=ix[t],b=ix[t+1],c=ix[t+2],ax=RX[a],az=RZ[a],bx=RX[b],bz=RZ[b],cx=RX[c],cz=RZ[c],d=(bz-cz)*(ax-cx)+(cx-bx)*(az-cz);if(Math.abs(d)<1e-12)continue;
+        const i0=Math.max(0,Math.ceil((Math.min(ax,bx,cx)-g.x0)/cs-0.5)),i1=Math.min(nx-1,Math.floor((Math.max(ax,bx,cx)-g.x0)/cs-0.5)),j0=Math.max(0,Math.ceil((Math.min(az,bz,cz)-g.z0)/cs-0.5)),j1=Math.min(nz-1,Math.floor((Math.max(az,bz,cz)-g.z0)/cs-0.5));
+        for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const px=g.x0+(i+0.5)*cs,pz=g.z0+(j+0.5)*cs,u=((bz-cz)*(px-cx)+(cx-bx)*(pz-cz))/d,v=((cz-az)*(px-cx)+(ax-cx)*(pz-cz))/d,w=1-u-v;
+          if(u>=-1e-4&&v>=-1e-4&&w>=-1e-4){const y=u*RY[a]+v*RY[b]+w*RY[c];if(y>Hc[j*nx+i])Hc[j*nx+i]=y;}}}}rockGeos.forEach(g=>g.dispose());}
   const tops=[];for(let c=0;c<HMg.vi.length;c++){const vi=HMg.vi[c];if(vi>=0&&NY[vi]>0.4)tops.push(vi);}
   shuffle(tops,R); hmDilate(); T.groundH=new Float32Array(HMg.h);
   {const p=T.sg.attributes.position,c=T.sg.attributes.color.array,e=sandTop+0.01*sc;for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),k=hmMaxDisc(x,z,0.018*sc)>e?0.6:hmMaxDisc(x,z,0.045*sc)>e?0.82:1;
@@ -1747,7 +1756,8 @@ function build(){
   }
   counts.fish=fishes.length;
 
-  // ── cleanup crew ──
+  // ── cleanup crew ── (placed on the crew height grid, so nobody starts in mid-air beside an edge)
+  CW=1;
   crew=[];
   {
     const eff2=(W*D)/Math.pow(sc,1.35),csc=sc>1.5?1+(sc-1.5)*0.25:1,nC=P.crew;
@@ -1758,7 +1768,7 @@ function build(){
       addC({...m,kind:'glass',type:'trochus',size,speed:0.0018*csc,p:V((R()-.5)*(W-0.1*sc),sandTop+hw*(0.15+R()*0.65),D/2-0.002)});}
     for(let i=0,n=Math.round(eff2*3*nC);i<n;i++){const size=0.014*csc,m=makeSnail('nass',size,R);addC({...m,kind:'nass',type:'nass',size,speed:0.006*csc,p:spot(h=>h<=sandTop+0.003)});}
     for(let i=0,n=Math.round(eff2*3*nC);i<n;i++){const type=i%2?'scarlet':'blueleg',size=(0.026+R()*0.008)*csc,m=makeCrab(type,size,R);addC({...m,kind:'crab',type,size,speed:0.015*csc,p:spot(h=>R()<0.5?h<=sandTop+0.003:h>sandTop+0.03*sc)});}
-    for(const c of crew)c.g.position.copy(c.p);
+    for(const c of crew)c.g.position.copy(c.p);CW=0;
   }
 
   // ── shadows / light rig sized to the tank ──
@@ -1772,7 +1782,7 @@ function build(){
 
   if(ex)for(const l of[-1,1]){   // feature spotlights on the two biggest colonies, left and right of centre: warm, soft-edged, no shadows, with a faint beam
     const q=placed.filter(q=>q.x*l>W*0.06&&q.x*l<W*0.3&&q.z>-D*0.25&&q.y>sandTop+0.4).sort((a,b)=>b.r-a.r)[0];if(!q)continue;T.spot.push(q);
-    const s=new THREE.SpotLight(0xffe0b0,70,0,0.2,0.7,2),m=new THREE.Mesh(new THREE.PlaneGeometry(0.6,surfY-q.y),rayMat);s.position.set(q.x,H+1.2,q.z+0.6);s.target.position.set(q.x,q.y,q.z);group.add(s,s.target);
+    const s=new THREE.SpotLight(0xffd9a0,260,0,0.3,0.8,2),m=new THREE.Mesh(new THREE.PlaneGeometry(1.1,surfY-q.y),rayMat);s.position.set(q.x,H+1.2,q.z+0.6);s.target.position.set(q.x,q.y,q.z);group.add(s,s.target);
     m.position.set(q.x,(surfY+q.y)/2,q.z);m.rotation.order='YXZ';m.userData.roll=0;group.add(m);rays.push(m);}
   applyLight();applyBacking();applyMicro();
   const dt=performance.now()-t0;T.buildMs=dt;
@@ -2132,7 +2142,9 @@ function updateTour(dt){
     if(sh.pick&&!sh.subject){tourT=sh.dur+1;return;}
     camera.fov=sh.fov;camera.updateProjectionMatrix();
   }
+  _tmp.copy(camera.position);_tmp2.copy(controls.target);
   sh.f(tourT===0?0:clamp(tourT/sh.dur,1e-6,1),camera.position,controls.target,sh,dt);
+  {const c=camera.position,t=controls.target;if(!isFinite(c.x+c.y+c.z+t.x+t.y+t.z)||c.distanceToSquared(t)<1e-8){c.copy(_tmp);t.copy(_tmp2);tourT=sh.dur+1;return;}}   // a degenerate pose: keep the last good frame and move on
   if(!T.ex){const c=camera.position,t=controls.target,m=T.W/2-0.3*T.sc;   // outside shots close to the glass stay within the front pane and look into the tank, never along it at the end panels
     if(c.z>T.D/2&&c.z<T.D/2+0.7*T.sc&&c.y<T.H){c.x=clamp(c.x,-m,m);t.x=clamp(t.x,c.x-(t.z-c.z)*-0.9,c.x+(t.z-c.z)*-0.9);}}
   if(T.ex&&camera.position.z>T.D/2){const c=camera.position,t=controls.target;c.x=clamp(c.x,-T.W*0.3,T.W*0.3);c.z=Math.max(c.z,T.D/2+0.7);c.y=T.sandTop+1.1+(clamp(c.y,0,T.H)-T.H*0.5)*0.18;t.x=clamp(t.x,-T.W*0.36,T.W*0.36);t.y=clamp(t.y,c.y+0.1,T.H*0.7);}   // exhibit: stay inside the window's view
@@ -2300,7 +2312,7 @@ function perf(seconds=10){
 }
 function simStats(sec){frozen=true;const st={};for(let i=0;i<sec*60;i++){updateFish(1/60);updateCrew(1/60);for(const f of fishes){const k=f.sp.key,e=st[k]||(st[k]={n:0,y:0,modes:{}});e.n++;e.y+=(f.p.y-T.sandTop)/T.hw;const m=f.mode==='chase'?'chase':f.hideT>0?'hide':f.mode;e.modes[m]=(e.modes[m]||0)+1;}}
   frozen=false;for(const k in st){const e=st[k];e.avgHeight=+(e.y/e.n).toFixed(2);for(const m in e.modes)e.modes[m]=Math.round(e.modes[m]/e.n*100)+'%';delete e.y;delete e.n;}return st;}
-window.__reef={updateFish,get fishes(){return fishes;},puff,get puffs(){return puffN;},openMenu,go,setDetail,amb,P,U,sun,ao,bloom,simStats,build,setView,swim,updateSwim,shotPrep,shot,perf,get T(){return T;},get crew(){return crew;},updateCrew,groundAt,renderer,scene,camera,controls,render,THREE};
+window.__reef={updateFish,get fishes(){return fishes;},puff,get puffs(){return puffN;},openMenu,go,setDetail,amb,P,U,sun,ao,bloom,simStats,build,setView,swim,updateSwim,shotPrep,shot,perf,get T(){return T;},get crew(){return crew;},updateCrew,groundAt:(x,z)=>{CW=1;const h=groundAt(x,z);CW=0;return h;},renderer,scene,camera,controls,render,THREE};
 </script>
 </body>
 </html>

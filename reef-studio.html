@@ -109,7 +109,7 @@
   @media (max-width:640px){#ui{width:calc(100% - 74px);max-height:62%}#hint{display:none}#hud{left:12px}#tanks{grid-template-columns:1fr 1fr}}
   /* upright touch phones: turn the page so the scene is always landscape (the script maps pointer coordinates and sizes back) */
   @media (orientation:portrait) and (pointer:coarse){
-    body{width:100dvh;height:100dvw;transform-origin:0 0;transform:rotate(90deg) translateY(-100%)}
+    body{width:100dvh;height:100dvw;transform-origin:top left;transform:translateX(100dvw) rotate(90deg)}
     #ui{width:290px;max-height:calc(100% - 24px)}#hud{left:314px}
     #tanks{grid-template-columns:repeat(4,1fr);width:94%;gap:8px}#tanks button{padding:6px 4px;font-size:15px}#tanks small{font-size:11px}
     #start .sc{gap:6px;padding:8px 16px}#start h1{font-size:56px}#start p{font-size:16px}#enter{font-size:20px}#slinks button{font-size:16px}#sset{font-size:14px;max-width:80%}#keys{max-width:80%}
@@ -2246,9 +2246,10 @@ function amb(C){const sr=C.sampleRate,R=Math.random,
     lfo=(f,d,p)=>{const o=C.createOscillator();o.frequency.value=f;o.connect(G(d)).connect(p);o.start();},
     buf=(sec,fn)=>{const n=sr*sec|0,B=C.createBuffer(2,n,sr);for(let c=0;c<2;c++)fn(B.getChannelData(c),n);return B;};
   // soft brown noise, looped seamlessly (the tail cross-fades into the start); far gentler than white noise
-  const nb=buf(9,(d,n)=>{for(let i=0,b=0;i<n+4096;i++){b=(b+0.02*(R()*2-1))/1.02;if(i<n)d[i]=b*3.5;else{const k=(i-n)/4096;d[i-n]=d[i-n]*k+b*3.5*(1-k);}}}),
+  const nb=buf(9,(d,n)=>{const f=sr/4|0,x=new Float32Array(n+f);let y=0,e=0;for(let i=0;i<n+f;i++){y+=0.02*(R()*2-1-y);x[i]=y;}
+    for(let i=0;i<f;i++){const a=i/f*Math.PI/2;x[i]=x[i]*Math.sin(a)+x[n+i]*Math.cos(a);}for(let i=0;i<n;i++)e+=x[i]*x[i];const g=0.2/Math.sqrt(e/n);for(let i=0;i<n;i++)d[i]=x[i]*g;}),
     ir=buf(2.5,(d,n)=>{for(let i=0,b=0;i<n;i++){const t=i/sr;b+=(R()*2-1-b)*(0.05+0.5*Math.exp(-t*3));d[i]=b*(1-Math.exp(-t*40))*Math.exp(-t*2.2);}});
-  const lim=new DynamicsCompressorNode(C,{threshold:-6,knee:6,ratio:20,attack:0.003,release:0.3});lim.connect(C.destination);
+  const lim=new DynamicsCompressorNode(C,{threshold:-4,knee:8,ratio:16,attack:0.004,release:0.25});lim.connect(C.destination);
   const out=G(0),vol=G(1),tone=bq('lowpass',18000,0.5),cv=C.createConvolver();cv.buffer=ir;out.connect(vol).connect(tone).connect(lim);cv.connect(G(0.5)).connect(out);
   const src=(r,...to)=>{const q=C.createBufferSource();q.buffer=nb;q.loop=true;q.playbackRate.value=r;for(const t of to)q.connect(t);q.start(0,R()*8);return q;};
   // pump: low rumble and a faint motor hum

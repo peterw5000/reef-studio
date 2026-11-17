@@ -6,3 +6,6 @@ critic/renders/
 *.jpg
 # local tool settings
 .claude/
+
+# kept on this computer only, not published
+addons/

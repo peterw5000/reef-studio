@@ -1,0 +1,8 @@
+# test tooling output and dependencies
+critic/node_modules/
+critic/renders/
+*.wav
+*.png
+*.jpg
+# local tool settings
+.claude/

@@ -242,7 +242,7 @@ const FACTS=["Corals are animals: each colony is built by thousands of tiny poly
 "Leather corals have no stony skeleton; their bodies are stiffened by tiny mineral spicules called sclerites."];
 function newFact(){const e=document.getElementById('lfact');if(e)e.textContent=FACTS[Math.floor(Math.random()*FACTS.length)];newFan();}
 {const st=document.createElement('style');let k='';for(let d=0;d<8;d++){const a=(d*0.45/6.5*100).toFixed(1),b=(d*0.45/6.5*100+8).toFixed(1);
-  k+=`@keyframes fl${d}{0%{opacity:0;transform:scale(.8)}${a}%{opacity:0;transform:scale(.8)}${b}%{opacity:1;transform:scale(1)}88%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}`;}
+  k+=d===0?'@keyframes fl0{0%{opacity:1;transform:scale(1)}88%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}':`@keyframes fl${d}{0%{opacity:0;transform:scale(.8)}${a}%{opacity:0;transform:scale(.8)}${b}%{opacity:1;transform:scale(1)}88%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}`;}
   st.textContent=k;document.head.appendChild(st);}
 function newFan(){const g=document.getElementById('lfan');if(!g)return;const NS='http://www.w3.org/2000/svg',L=[];
   const col=['#d8644e','#b46ad6','#e0a23c','#d04a78'][Math.floor(Math.random()*4)];let h='<svg viewBox="0 0 170 110"><path d="M40 107h90" stroke="#3a4a58" stroke-width="2"/></svg>';
@@ -2221,7 +2221,7 @@ $('tanks').innerHTML=TK.map(t=>{const w=Math.min(52,26*t[2]/t[4]),h=w*t[4]/t[2];
 function go(mode){audioStart();
   const fin=()=>{menu=false;document.body.classList.remove('menu');ST.classList.add('hide');if(mode==='tour')setView('tour');else if(mode==='swim')startSwim();else if(mode)setView(mode);};
   if(ready&&!dirty)return fin();if(going)return;going=true;LS('loading','1');ST.classList.add('hide');LD.classList.remove('hide');newFact();   // first entry, or a different tank was picked in the menu: grow the reef behind the loading screen
-  requestAnimationFrame(()=>setTimeout(()=>{stopSwim();build();setView('front');const first=!ready;going=dirty=false;ready=true;window.__ok=1;ST.classList.remove('first');$('enter').textContent='Back to the reef';LD.classList.add('hide');if(first)tick();fin();setTimeout(()=>LS('loading',null),2500);},60));}
+  requestAnimationFrame(()=>setTimeout(()=>{stopSwim();build();setView('front');const first=!ready;going=dirty=false;ready=true;window.__ok=1;ST.classList.remove('first');$('enter').textContent='Back to the reef';LD.classList.add('hide');if(first)tick();fin();setTimeout(()=>LS('loading',null),2500);},650));}
 function openMenu(){if(AUTO||menu||!ready)return;menu=true;stopSwim();document.body.classList.add('menu');ST.classList.remove('hide');}
 $('enter').onclick=()=>{go(QV&&!ready?QV:'');};$('sshow').onclick=()=>go('tour');$('stab').onclick=()=>{document.body.classList.toggle('peek',tour);$('ui').classList.remove('collapsed');};   // during the showcase the tab opens the panel without stopping it
 // the wheel: steps along the view when looking around (same clamps as walking), ends a tour, does nothing while swimming; in orbit it zooms about a target kept at a sensible distance

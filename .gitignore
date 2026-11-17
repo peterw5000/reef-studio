@@ -1,9 +1,11 @@
-# test tooling output and dependencies
-critic/node_modules/
-critic/renders/
+# dependencies and test output
+node_modules/
 *.wav
 *.png
 *.jpg
+# README screenshots are tracked
+!.github/screenshots/
+!.github/screenshots/*.jpg
 # local tool settings
 .claude/
 

@@ -1,0 +1,21 @@
+{
+  "name": "reef-studio",
+  "version": "1.0.0",
+  "description": "A procedural reef aquarium that runs in the browser as a single HTML file.",
+  "private": true,
+  "type": "module",
+  "license": "CC-BY-NC-4.0",
+  "author": "Robert Gourley",
+  "repository": { "type": "git", "url": "https://github.com/rgourley/reef-studio.git" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "serve": "python serve.py",
+    "test:smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "terser": "^5.36.0"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1"
+  }
+}

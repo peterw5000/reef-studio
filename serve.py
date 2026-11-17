@@ -1,9 +1,11 @@
 # Static file server that tells the browser never to cache, so a refresh always shows the latest page.
-import http.server, sys
+import http.server, sys, os, functools
 class NoCache(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('Cache-Control', 'no-store, must-revalidate')
         self.send_header('Expires', '0')
         super().end_headers()
 port = int(sys.argv[1]) if len(sys.argv) > 1 else 8781
-http.server.ThreadingHTTPServer(('127.0.0.1', port), NoCache).serve_forever()
+# serve this script's own folder, wherever it is started from
+handler = functools.partial(NoCache, directory=os.path.dirname(os.path.abspath(__file__)))
+http.server.ThreadingHTTPServer(('127.0.0.1', port), handler).serve_forever()

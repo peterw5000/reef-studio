@@ -4,7 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Reef Studio · a living reef aquarium</title>
-<meta name="description" content="Reef Studio grows a procedural saltwater reef aquarium in your browser: corals, fish and a cleanup crew you can light, tour and swim through.">
+<meta name="description" content="Reef Studio is a procedural reef aquarium in a single HTML file of about 96 KB. Corals, fish, light and sound are all made by code.">
+<link rel="canonical" href="https://rgourley.github.io/reef-studio/">
+<meta name="author" content="Robert Gourley">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Reef Studio">
+<meta property="og:title" content="Reef Studio: a living reef aquarium in your browser">
+<meta property="og:description" content="A procedural reef aquarium in a single HTML file of about 96 KB. Corals, fish, rock, light and sound are all made by code. Pick a tank, then tour, walk or swim through it.">
+<meta property="og:url" content="https://rgourley.github.io/reef-studio/">
+<meta property="og:image" content="https://rgourley.github.io/reef-studio/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A colourful procedural reef tank with corals and fish, titled Reef Studio">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reef Studio: a living reef aquarium in your browser">
+<meta name="twitter:description" content="A procedural reef aquarium in a single HTML file of about 96 KB. All made by code.">
+<meta name="twitter:image" content="https://rgourley.github.io/reef-studio/og.jpg">
 <meta name="theme-color" content="#05070a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2307141f'/%3E%3Cpath d='M16 27V15m0 4c-5-1-7-5-7-10m7 10c5-1 7-5 7-10m-7 6V6' stroke='%23e2775a' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
@@ -74,10 +89,12 @@
   #lfact{font-size:clamp(20px,2.9vw,28px);line-height:1.45;color:#eef6fa;letter-spacing:0;min-height:3em;text-shadow:0 1px 3px #000}
   #hint{position:fixed;right:12px;bottom:10px;color:var(--dim);font-size:12px;background:var(--panel);padding:6px 10px;border-radius:8px;border:1px solid var(--line)}
   #ui.collapsed{display:none}#ui.collapsed~#stab{display:block}body.menu #stab{display:none!important}
-  #ui .cred{position:sticky;bottom:0;display:flex;justify-content:space-between;padding:9px 12px 7px;font-size:11px;color:var(--dim);background:linear-gradient(transparent,rgba(12,18,26,.95) 45%)}
+  #ui .cred{position:sticky;bottom:0;display:flex;justify-content:space-between;padding:9px 12px 7px;font-size:11px;color:var(--dim);background:#0c121a;border-top:1px solid var(--line)}
+  #ui #body{padding-bottom:10px}
   #ui summary{cursor:pointer}#stk summary{display:flex;justify-content:space-between;align-items:center}#stk summary:hover{color:var(--text)}
   #stk summary::after{content:"▸";font-size:14px;transition:transform .2s}#stk[open] summary::after{transform:rotate(90deg)}
   #ui .cred a{color:var(--text);text-decoration:none;border-bottom:1px solid var(--line)}
+  #ui .cred{flex-wrap:nowrap;white-space:nowrap}
   .cred,#cred{flex-wrap:wrap;align-items:center;gap:3px 12px}.fl{display:flex;gap:12px;align-items:center;margin-left:auto}
   a.lic{margin-left:4px;font-size:.8em;opacity:.6}#ui .cred a.sup,#cred a.sup{display:inline-flex;align-items:center;gap:4px;color:#ff5e5b;border:0;opacity:.85}a.sup:hover{opacity:1}
   a.sup svg{width:1.1em;height:1.1em;fill:none;stroke:currentColor;stroke-width:1.400;stroke-linecap:round;stroke-linejoin:round}
@@ -184,7 +201,7 @@
     </section>
     <section><div id="stats"></div></section>
   </div>
-  <div class="cred"><span>Created by <a href="https://robertcreative.com" target="_blank" rel="noopener">Robert Gourley</a> <a class="lic" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></span><span class="fl"><a class="gh" target="_blank" rel="noopener">GitHub</a><a class="sup" href="https://ko-fi.com/robertgourley" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5h9v4.5A3.5 3.5 0 0 1 7.500 13h-2A3.500 3.500 0 0 1 2 9.500zM11 6h1.200a1.800 1.800 0 0 1 0 3.600H11M4.500 1.800v1.800M7 1.800v1.800M9.500 1.800v1.800"/></svg>Support</a></span></div>
+  <div class="cred"><span>By <a href="https://robertcreative.com" target="_blank" rel="noopener">Robert Gourley</a></span><span class="fl"><a class="gh" target="_blank" rel="noopener">GitHub</a><a class="sup" href="https://ko-fi.com/robertgourley" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5h9v4.5A3.5 3.5 0 0 1 7.500 13h-2A3.500 3.500 0 0 1 2 9.500zM11 6h1.200a1.800 1.800 0 0 1 0 3.600H11M4.500 1.800v1.800M7 1.800v1.800M9.500 1.800v1.800"/></svg>Support</a></span></div>
 </div>
 <div id="start" class="first"><div class="sc">
 <h1>Reef Studio</h1><p>A living reef aquarium, grown in your browser</p>
@@ -194,7 +211,7 @@
 <details id="sset"><summary>Settings</summary>
 <div id="sopt">Detail<div class="seg" id="detail"><button data-v="low">Low</button><button data-v="med">Medium</button><button data-v="high">High</button></div><button id="mute" title="Sound (M)">Sound on</button></div>
 <div id="keys"></div></details>
-</div><div id="cred"><span>Created by <a href="https://robertcreative.com" target="_blank" rel="noopener">Robert Gourley</a> <a class="lic" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></span><span class="fl"><a class="gh" target="_blank" rel="noopener">GitHub</a><a class="sup" href="https://ko-fi.com/robertgourley" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5h9v4.5A3.5 3.5 0 0 1 7.500 13h-2A3.500 3.500 0 0 1 2 9.500zM11 6h1.200a1.800 1.800 0 0 1 0 3.600H11M4.500 1.800v1.800M7 1.800v1.800M9.500 1.800v1.800"/></svg>Support</a></span></div></div>
+</div><div id="cred"><span>Created by <a href="https://robertcreative.com" target="_blank" rel="noopener">Robert Gourley</a> · <a class="lic" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></span><span class="fl"><a class="gh" target="_blank" rel="noopener">GitHub</a><a class="sup" href="https://ko-fi.com/robertgourley" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5h9v4.5A3.5 3.5 0 0 1 7.500 13h-2A3.500 3.500 0 0 1 2 9.500zM11 6h1.200a1.800 1.800 0 0 1 0 3.600H11M4.500 1.800v1.800M7 1.800v1.800M9.500 1.800v1.800"/></svg>Support</a></span></div></div>
 <button id="mbtn" title="Menu (Esc)" aria-label="Menu">☰</button><div id="hud"></div>
 <div id="loading" class="hide"><div class="lc">
 <div id="lfan" aria-hidden="true"></div>

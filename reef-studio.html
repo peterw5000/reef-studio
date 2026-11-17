@@ -827,7 +827,6 @@ const PAL={
   gorg:[[0.58,0.2,0.62],[0.88,0.66,0.2],[0.82,0.24,0.26]],
   monti:[[[0.95,0.45,0.15],[1,0.78,0.42]],[[0.55,0.2,0.55],[0.82,0.52,0.88]],[[0.85,0.2,0.25],[1,0.58,0.58]],[[0.45,0.72,0.35],[0.72,0.92,0.5]]],
   nem:[[[0.7,0.35,0.3],[0.92,0.36,0.42],[1,0.78,0.82]],[[0.5,0.45,0.3],[0.55,0.76,0.4],[0.78,0.96,0.55]],[[0.6,0.3,0.2],[0.95,0.45,0.2],[1,0.8,0.5]]],
-  zoa:[[[0.4,0.62,0.25],[0.85,0.5,0.15],[0.35,0.3,0.2]],[[0.8,0.45,0.15],[0.35,0.65,0.3],[0.3,0.25,0.15]],[[0.45,0.25,0.5],[0.75,0.7,0.25],[0.3,0.35,0.2]],[[0.35,0.55,0.3],[0.55,0.75,0.4],[0.6,0.35,0.25]],[[0.55,0.3,0.45],[0.4,0.62,0.35],[0.3,0.2,0.25]],[[0.75,0.6,0.2],[0.85,0.45,0.2],[0.4,0.3,0.15]],[[0.3,0.45,0.55],[0.7,0.75,0.5],[0.3,0.3,0.25]],[[0.6,0.3,0.25],[0.75,0.65,0.3],[0.35,0.25,0.2]]],
   mush:[[[0.25,0.3,0.88],[0.5,0.68,1]],[[0.82,0.2,0.25],[0.96,0.52,0.42]],[[0.35,0.66,0.5],[0.62,0.92,0.42]]],
   clam:[[0.15,0.45,0.96],[0.25,0.82,0.55],[0.88,0.66,0.2],[0.42,0.3,0.88]],
 };
@@ -1019,13 +1018,18 @@ function clam(R,size,col,noise){
     const c=cb.clone().lerp(cs,sstep(0.3,0.75,st)*0.55*(1-rim)).lerp(cd,rim*0.7).lerp(cs,rim*dots*0.8).multiplyScalar(1-0.75*Math.exp(-az*az*700)*(1-u*u));o[0]=c.r;o[1]=c.g;o[2]=c.b;o[3]=0.05+az*0.5;}),m:'soft'});
   return out;
 }
-function zoaTemplate(sz,c1,c2,c3){c3=c3||c2;
-  const h=sz*0.95,cf=c1.clone().lerp(c2,0.25),t=tube(V(),V(0,h,0),sz*0.5,sz*0.8,8,c1.clone().multiplyScalar(0.35),c1.clone().multiplyScalar(0.75),0,0.3);
-  let d=new THREE.SphereGeometry(sz*0.82,14,4,0,Math.PI*2,0,Math.PI*0.5);d.scale(1,0.3,1);d.translate(0,h,0);
-  d=withAttrs(d,(x,y,z,o)=>{const r=Math.hypot(x,z)/(sz*0.82);const c=r<0.18?c3:c2.clone().lerp(c1,sstep(0.35,0.8,r));o[0]=c.r;o[1]=c.g;o[2]=c.b;o[3]=0.35;});
-  const parts=[t,d],cd=cf.clone().multiplyScalar(0.8);let hs=7;const rnd=()=>(hs=hs*16807%2147483647)/2147483647;
+// zoanthid morphs are made from rules: skirt/face hue pairs hobbyists know, six face patterns, tentacles that sometimes differ, and a fluorescence strength per colony
+const ZP=[[.07,.3],[.78,.14],[0,.33],[.58,.07],[.92,.48],[.14,.03],[.3,.08],[.52,.9],[.25,.78],[.47,.75],[.33,.92],[.12,0],[.95,.12],[.6,.33]];let ZG=1;
+function zoaTemplate(sz,Z){const hc=(h,s,l)=>new THREE.Color().setHSL((h+1)%1,s,l,THREE.SRGBColorSpace),jt=()=>(Z()-.5)*.04,q=ZP[(Z()*14)|0],sw=Z()<.4,pt=(Z()*6)|0,h1=q[+sw]+jt(),h2=q[+!sw]+jt(),
+    c1=hc(h1,.6+Z()*.3,.3+Z()*.12),c2=hc(h2,.75+Z()*.2,.38+Z()*.1),c3=pt?hc(Z()<.5?h1:.13+Z()*.05,.9,.5):c2.clone().multiplyScalar(.55),ns=5+(Z()*4|0),
+    h=sz*0.95,cf=c1.clone().lerp(c2,0.25),ct=Z()<.3?hc(Z()<.5?h1:h2,.85,.55):cf,t=tube(V(),V(0,h,0),sz*0.5,sz*0.8,8,c1.clone().multiplyScalar(0.35),c1.clone().multiplyScalar(0.75),0,0.3);
+  ZG=Z()<.3?1.5:Z()<.45?.6:1;   // strong fluorescers glow harder under blue light
+  let d=new THREE.SphereGeometry(sz*0.82,24,9,0,Math.PI*2,0,Math.PI*0.5);d.scale(1,0.3,1);d.translate(0,h,0);
+  d=withAttrs(d,(x,y,z,o,i)=>{const r=Math.hypot(x,z)/(sz*0.82),a=Math.atan2(z,x),k=[0,sstep(.4,.44,r)*(1-sstep(.58,.62,r)),1-sstep(.26,.3,r),sstep(.1,.4,Math.sin(a*ns))*sstep(.12,.3,r)*(1-sstep(.7,.76,r)),(Math.sin(i*12.99)*43758.5%1+1)%1>.7?.9:0,sstep(.66,.7,r)][pt];
+    const c=r<0.18?c3:c2.clone().lerp(c1,sstep(0.6,0.68,r)).lerp(c3,k);o[0]=c.r;o[1]=c.g;o[2]=c.b;o[3]=0.35;});
+  const parts=[t,d],cd=ct.clone().multiplyScalar(0.8);let hs=7;const rnd=()=>(hs=hs*16807%2147483647)/2147483647;
   for(let k=0;k<28;k++){const a=(k+rnd()*0.9)/28*Math.PI*2,odd=k%2,len=sz*(0.17+rnd()*0.17),el=odd?-0.1+rnd()*0.3:0.3+rnd()*0.5,r0=sz*(0.74+0.08*odd),ca=Math.cos(a),sa=Math.sin(a);
-    const p0=V(ca*r0,h+sz*(odd?0.0:0.06),sa*r0);parts.push(tube(p0,V(ca*(r0+len*Math.cos(el)),p0.y+len*Math.sin(el),sa*(r0+len*Math.cos(el))),sz*0.065,sz*0.032,4,odd?cd:cf,cf,0.35,0.6));}
+    const p0=V(ca*r0,h+sz*(odd?0.0:0.06),sa*r0);parts.push(tube(p0,V(ca*(r0+len*Math.cos(el)),p0.y+len*Math.sin(el),sa*(r0+len*Math.cos(el))),sz*0.065,sz*0.032,4,odd?cd:ct,ct,0.35,0.6));}
   return mergeGeometries(parts);
 }
 function mushTemplate(sz,c1,c2){
@@ -1576,13 +1580,13 @@ function build(){
       shuffle(near,R);const chosen=[];
       for(const i of near){if(chosen.length>=140)break;let okk=true;for(const j of chosen){const dx=RX[i]-RX[j],dy=RY[i]-RY[j],dz=RZ[i]-RZ[j];if(dx*dx+dy*dy+dz*dz<spacing*spacing){okk=false;break;}}if(okk)chosen.push(i);}
       if(chosen.length<4)continue;(T.col=T.col||[]).push([cx,cy,cz]);for(const i of near)for(let k=0;k<3;k++)RK[i*3+k]*=0.6;
-      const t=tmpl(),im=new THREE.InstancedMesh(t,MAT.softI,chosen.length),gk=R()<0.3?0.06+R()*0.1:0.5+R()*0.8,E=new Float32Array(chosen.length*3);
+      ZG=1;const t=tmpl(),im=new THREE.InstancedMesh(t,MAT.softI,chosen.length),gk=(R()<0.3?0.06+R()*0.1:0.5+R()*0.8)*ZG,E=new Float32Array(chosen.length*3);
       chosen.forEach((i,j)=>{const q=orient(NX[i],NY[i],NZ[i],0.5);const s=0.75+R()*0.5;_m.compose(_v.set(RX[i],RY[i],RZ[i]),q,_s.set(s,s*(0.8+R()*0.5),s));im.setMatrixAt(j,_m);E[j*3]=gk;E[j*3+2]=1;});
       t.setAttribute('aI',new THREE.InstancedBufferAttribute(E,3));im.castShadow=im.receiveShadow=true;im.frustumCulled=false;group.add(im);
     }
   }
   const zsz=0.0065*sc;
-  colony(Math.round(eff*22*P.coral*SS.zoa),sc*(0.04+R()*0.05),()=>{const p=pick(R,PAL.zoa);return zoaTemplate(zsz,S(p[0]),S(p[1]),S(p[2]));},i=>NY[i]>-0.2&&hf(i)<0.75&&!(RZ[i]<-D/2+0.1*D),zsz*1.1);
+  colony(Math.round(eff*22*P.coral*SS.zoa),sc*(0.04+R()*0.05),()=>zoaTemplate(zsz,mulberry32(R()*4294967296|0)),i=>NY[i]>-0.2&&hf(i)<0.75&&!(RZ[i]<-D/2+0.1*D),zsz*1.1);
   counts.zoa=Math.round(eff*(22*SS.zoa+6*SS.mush)*P.coral);
   const msz=0.014*sc;
   colony(Math.round(eff*6*P.coral*SS.mush),sc*(0.06+R()*0.05),()=>{const p=pick(R,PAL.mush);return mushTemplate(msz,S(p[0]),S(p[1]));},i=>NY[i]>0&&hf(i)<0.45,msz*1.7);

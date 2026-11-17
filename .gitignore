@@ -12,3 +12,4 @@ node_modules/
 # kept on this computer only, not published
 addons/
 critic/
+!og.jpg

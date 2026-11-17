@@ -586,7 +586,7 @@ attribute vec3 aBase; attribute float aFinUp;
       .replace('#include <color_fragment>','#include <color_fragment>\n'+ALB_FRAG+SKIN_FRAG)
       .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\n#ifdef SKIN\nroughnessFactor=clamp(roughnessFactor*(0.8+0.4*_scJ),0.05,1.0);\n#endif')
       .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+BUMP_FRAG)
-      .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n float glowK=1.0;\n#ifdef GLOW\n{ float mx=max(diffuseColor.r,max(diffuseColor.g,diffuseColor.b)), mn=min(diffuseColor.r,min(diffuseColor.g,diffuseColor.b)); glowK=vGlow*smoothstep(0.25,0.75,(mx-mn)/max(mx,1e-4)); }\n#endif\n float flG=uFluorGlobal;\n#ifdef FISH\n flG=uWhiteK*0.9;\n{ vec3 vv=normalize(vViewPosition); float fr=pow(1.0-abs(dot(normal,vv)),3.0); float up=smoothstep(-0.15,0.7,dot(normal,normalize((viewMatrix*vec4(0.0,1.0,0.0,0.0)).xyz)));\n  totalEmissiveRadiance += (diffuseColor.rgb*0.35+vec3(0.16,0.26,0.36))*fr*up*(0.25+0.75*uWhiteK)*0.22; }\n#endif\n totalEmissiveRadiance += diffuseColor.rgb*diffuseColor.rgb*uFluor*flG*glowK;\n#ifdef FIN\n totalEmissiveRadiance += diffuseColor.rgb*0.1*uWhiteK;\n#endif')
+      .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n float glowK=1.0;\n#ifdef GLOW\n{ float mx=max(diffuseColor.r,max(diffuseColor.g,diffuseColor.b)), mn=min(diffuseColor.r,min(diffuseColor.g,diffuseColor.b)); glowK=vGlow*smoothstep(0.25,0.75,(mx-mn)/max(mx,1e-4)); }\n#endif\n float flG=uFluorGlobal;\n#ifdef FISH\n flG=uWhiteK*0.9;\n{ vec3 vv=normalize(vViewPosition); float fr=pow(clamp(1.0-abs(dot(normal,vv)),0.0,1.0),3.0); float up=smoothstep(-0.15,0.7,dot(normal,normalize((viewMatrix*vec4(0.0,1.0,0.0,0.0)).xyz)));\n  totalEmissiveRadiance += (diffuseColor.rgb*0.35+vec3(0.16,0.26,0.36))*fr*up*(0.25+0.75*uWhiteK)*0.22; }\n#endif\n totalEmissiveRadiance += diffuseColor.rgb*diffuseColor.rgb*uFluor*flG*glowK;\n#ifdef FIN\n totalEmissiveRadiance += diffuseColor.rgb*0.1*uWhiteK;\n#endif')
       .replace('#include <lights_fragment_begin>',LIGHTS_BEGIN)
       .replace('#include <tonemapping_fragment>',WATER_FRAG+'\n#include <tonemapping_fragment>');
   };
@@ -623,7 +623,7 @@ const MAT={
 // a thin green algae film on the glass, seen only at grazing angles and only with the Clear background
 const FILM={value:0};
 MAT.glass.onBeforeCompile=h=>{h.uniforms.uFilm=FILM;h.fragmentShader=h.fragmentShader.replace('#include <common>','#include <common>\nuniform float uFilm;')
-  .replace('#include <color_fragment>','#include <color_fragment>\n{ float f=uFilm*pow(1.0-abs(dot(normalize(vNormal),normalize(vViewPosition))),2.5); diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.2,0.42,0.12),f); diffuseColor.a+=f*0.3; }');};
+  .replace('#include <color_fragment>','#include <color_fragment>\n{ float f=uFilm*pow(clamp(1.0-abs(dot(normalize(vNormal),normalize(vViewPosition))),0.0,1.0),2.5); diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.2,0.42,0.12),f); diffuseColor.a+=f*0.3; }');};
 {const cv=document.createElement('canvas');cv.width=4;cv.height=256;const g2=cv.getContext('2d'),gr=g2.createLinearGradient(0,0,0,256);
   gr.addColorStop(0,'#ffffff');gr.addColorStop(0.55,'#8c8c8c');gr.addColorStop(1,'#2e2e2e');g2.fillStyle=gr;g2.fillRect(0,0,4,256);
   const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;MAT.backBlue.map=tx;MAT.backBlue.emissiveMap=tx;MAT.backBlue.needsUpdate=true;}
@@ -2066,6 +2066,7 @@ function onResize(){
   renderer.setSize(VW(),VH());composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(VW(),VH());
   U.uPxK.value=VH()*renderer.getPixelRatio()/2;
   partMat.uniforms.uScale.value=VH()*renderer.getPixelRatio()/(2*Math.tan(THREE.MathUtils.degToRad(camera.fov)/2));
+  if(T)render();   // setSize clears the canvas: draw again in the same frame, or every resize and adaptive pixel-ratio step shows one black frame
 }
 addEventListener('resize',onResize);
 

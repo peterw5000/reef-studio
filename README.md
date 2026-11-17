@@ -1,5 +1,7 @@
 # Reef Studio
 
+**[▶ Play it in your browser](https://rgourley.github.io/reef-studio/)**
+
 ![A 300 gallon reef tank, front view](.github/screenshots/home-front.jpg)
 
 A living saltwater reef aquarium that grows in your browser. Pick a tank, press Enter, and watch fish school past coral heads while a cleanup crew of crabs and snails works the sand. Light it, tour it, or swim right through it.
@@ -9,6 +11,8 @@ A living saltwater reef aquarium that grows in your browser. Pick a tank, press 
 To be honest about that number: it does not include [three.js](https://threejs.org) (the 3D library), which is loaded once from a CDN the first time you open the page. Everything else is in the file.
 
 ## Try it
+
+Play it online at **[rgourley.github.io/reef-studio](https://rgourley.github.io/reef-studio/)**, or download it and run it yourself:
 
 Open `index.html` in Chrome, Edge or Firefox. That is all. It needs an internet connection the first time, to fetch three.js (your browser caches it after that). A computer with a graphics card gives the best picture; phones work too, on a lower detail level.
 

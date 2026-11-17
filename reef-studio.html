@@ -170,7 +170,7 @@
     <section>
       <span class="lbl">Camera</span>
       <div class="seg" id="views"><button data-v="front">Front</button><button data-v="corner">Corner</button><button data-v="top">Top</button><button data-v="inside">Inside</button><button data-v="tour"></button><button data-v="follow">Follow</button><button data-v="swim">Swim</button></div>
-      <div class="inline"><button id="snap" style="flex:1">📷 Save snapshot</button></div>
+      <div class="inline"><button id="snap" style="flex:1">📷 Save snapshot</button><button id="clink" style="flex:1" title="Copy a link to this tank and seed">🔗 Copy link</button></div>
     </section>
     <section><div id="stats"></div></section>
   </div>
@@ -2077,6 +2077,10 @@ document.querySelectorAll('#backing button').forEach(b=>b.onclick=()=>{P.backing
 document.querySelectorAll('#quality button,#detail button').forEach(b=>b.onclick=()=>setDetail(b.dataset.v));
 document.querySelectorAll('#views button').forEach(b=>b.onclick=()=>tour&&P.view==='tour'&&b.dataset.v==='tour'?setView('front'):setView(b.dataset.v));
 $('collapse').onclick=()=>$('ui').classList.toggle('collapsed');
+$('clink').onclick=()=>{const i=TK.findIndex(t=>t[2]==P.W&&t[3]==P.D&&t[4]==P.H),q=new URLSearchParams();if(i>=0)q.set('tank',TN[i]);q.set('seed',P.seed);if(tour&&P.view==='tour')q.set('view','showcase');
+  const u=location.href.split(/[?#]/)[0]+'?'+q,b=$('clink'),ok=()=>{b.textContent='✓ Copied';setTimeout(()=>b.textContent='🔗 Copy link',1500);};
+  const fb=()=>{const t=document.createElement('textarea');t.value=u;document.body.append(t);t.select();try{document.execCommand('copy');ok();}catch(e){prompt('Copy this link',u);}t.remove();};
+  navigator.clipboard?navigator.clipboard.writeText(u).then(ok,fb):fb();};
 $('snap').onclick=()=>{render();const a=document.createElement('a');a.href=renderer.domElement.toDataURL('image/png');a.download=`reef-${P.seed}.png`;a.click();};
 addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
@@ -2149,6 +2153,8 @@ let frozen=false;
 // AUTO: the tools (or ?auto) get the bare scene, built at once; ?shell forces the shell on
 const Q=location.search,AUTO=(navigator.webdriver||/[?&]auto\b/.test(Q))&&!/[?&]shell\b/.test(Q),TOUCH=navigator.maxTouchPoints>0&&matchMedia('(pointer:coarse)').matches,DL=['low','med','high'],LD=$('loading'),ST=$('start');
 const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem('reef.'+k);v===null?localStorage.removeItem('reef.'+k):localStorage.setItem('reef.'+k,v);}catch(e){}return null;};
+const TN=['nano','home','large','exhibit'],QP=new URLSearchParams(Q),QI=TN.indexOf((QP.get('tank')||'').toLowerCase()),QS=parseInt(QP.get('seed')),QW=(QP.get('view')||'').toLowerCase(),QV=QW==='showcase'?'tour':['front','corner','top','inside','swim','follow'].includes(QW)?QW:'',GO=!AUTO&&(/[?&]go(=|&|$)/.test(Q)||QW==='showcase');   // direct links: ?tank=nano|home|large|exhibit &seed=N &view=showcase|front|corner|inside|swim|follow &go=1
+if(QS>0)P.seed=QS;
 const TK=[['Nano','45 cm cube · 24 gal',0.45,0.45,0.45],['Home','300 gal · 2.4 × 0.75 × 0.65 m',2.4,0.75,0.65],['Large','1,000 gal · 3.6 × 1.2 × 0.9 m',3.6,1.2,0.9],['Public exhibit','9 m window on a reef wall',9,5.5,4.5]];
 let look=false,lk=null,dirty=false,menu=!AUTO,ready=false,going=false,hud=false,pscale=1,pceil=1,pwait=0,best=99,fAcc=0,fN=0,fMax=0,fLast=0,AC=null,AM=null,muted=LS('snd')==='0',nearT=0,tp=null;
 P.detail='high';
@@ -2162,11 +2168,11 @@ $('tanks').innerHTML=TK.map(t=>{const w=Math.min(52,26*t[2]/t[4]),h=w*t[4]/t[2];
 [...$('tanks').children].forEach((b,i)=>b.onclick=()=>pickTank(i));
 // Enter / tour / swim: grows the reef the first time, later closes the menu
 function go(mode){audioStart();
-  const fin=()=>{menu=false;document.body.classList.remove('menu');ST.classList.add('hide');if(mode==='tour')setView('tour');else if(mode==='swim')startSwim();};
+  const fin=()=>{menu=false;document.body.classList.remove('menu');ST.classList.add('hide');if(mode==='tour')setView('tour');else if(mode==='swim')startSwim();else if(mode)setView(mode);};
   if(ready&&!dirty)return fin();if(going)return;going=true;LS('loading','1');ST.classList.add('hide');LD.classList.remove('hide');newFact();   // first entry, or a different tank was picked in the menu: grow the reef behind the loading screen
   requestAnimationFrame(()=>setTimeout(()=>{stopSwim();build();setView('front');const first=!ready;going=dirty=false;ready=true;window.__ok=1;ST.classList.remove('first');$('enter').textContent='Back to the reef';LD.classList.add('hide');if(first)tick();fin();setTimeout(()=>LS('loading',null),2500);},60));}
 function openMenu(){if(AUTO||menu||!ready)return;menu=true;stopSwim();document.body.classList.add('menu');ST.classList.remove('hide');}
-$('enter').onclick=()=>go();$('sshow').onclick=()=>go('tour');$('stab').onclick=()=>{document.body.classList.toggle('peek',tour);$('ui').classList.remove('collapsed');};   // during the showcase the tab opens the panel without stopping it
+$('enter').onclick=()=>{go(QV&&!ready?QV:'');};$('sshow').onclick=()=>go('tour');$('stab').onclick=()=>{document.body.classList.toggle('peek',tour);$('ui').classList.remove('collapsed');};   // during the showcase the tab opens the panel without stopping it
 // the wheel: steps along the view when looking around (same clamps as walking), ends a tour, does nothing while swimming; in orbit it zooms about a target kept at a sensible distance
 addEventListener('wheel',e=>{if(e.target!==renderer.domElement||!T)return;const k=e.deltaY<0?'KeyW':'KeyS',c=camera.position,t=controls.target;
   if(tour||swim.on||look){e.stopPropagation();e.preventDefault();if(tour)controls.dispatchEvent({type:'start'});else if(look){swim.keys[k]=true;walk(0.3);swim.keys[k]=false;}return;}
@@ -2240,8 +2246,9 @@ function tick(){
 syncUI();applyQuality();
 if(window.newFact)newFact();
 if(AUTO){ST.classList.add('hide');LD.classList.remove('hide');document.body.classList.remove('menu');$('mbtn').style.display='none';
-  requestAnimationFrame(()=>setTimeout(()=>{build();setView('front');ready=true;window.__ok=1;$('loading').classList.add('hide');tick();},30));}
-else pickTank(LS('tank')??1);
+  if(QI>=0)pickTank(QI);
+  requestAnimationFrame(()=>setTimeout(()=>{build();setView(QV||'front');ready=true;window.__ok=1;$('loading').classList.add('hide');tick();},30));}
+else{pickTank(QI>=0?QI:LS('tank')??1);if(GO)go(QV);}
 // ── deterministic shot mode (used by critic/render.mjs) ──
 const SHOTS=['front','corner','reef_close','sandline','surface_up','swim','actinic','fish_tang','fish_school','crew','anemone'];
 function shotPrep(){ frozen=true; build(); for(let i=0;i<900;i++){updateFish(1/60);updateCrew(1/60);} return SHOTS; }

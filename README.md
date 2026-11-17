@@ -44,6 +44,32 @@ index.html?tank=home&view=showcase        start the showcase tour right away
 | ![Moonlight](.github/screenshots/night-moon.jpg) | ![Zoanthid colour morphs](.github/screenshots/zoa-morphs.jpg) |
 | Moon lighting, with the corals glowing | A few of the zoanthid colour morphs |
 
+## Side panel
+
+Everything in the panel on the left, top to bottom. Press `H` to hide it; it shrinks to a small **Settings** tab you can click to bring it back.
+
+| Section | What you can change |
+|---|---|
+| **Showcase** | The big **▶ Showcase** button starts the cinematic tour; it turns into **■ Stop showcase** while it plays. |
+| **Tank** | Presets from a 24 gallon nano cube up to a 3,000 gallon display, plus the public exhibit. **Width**, **Depth** and **Height** sliders build any size in between, and the line under them shows the volume and the weight of the water. |
+| **Aquascape** | The rock layout: two islands, single island with bommies, archipelago with an arch, reef wall, or caves and overhangs. |
+| **Sand** | Aragonite (white), pink Fiji, oolitic (fine), crushed coral (coarse) or black. |
+| **Rock** | Live (Fiji / Tonga), Pukani (porous), Tonga branch, dry (new, white) or ceramic (man-made). |
+| **Reef style** | Mixed reef, SPS dominant (Acropora), softie reef, LPS dominant, zoa garden, clownfish and anemones, or fish only with live rock. |
+| **Rock, Corals, Fish, Crew** | Sliders for how much of each the reef gets. |
+| **Seed** | The number the whole reef is grown from. The dice picks a new one, **Grow reef** builds it. The same seed always grows the same reef. |
+| **Stock** | A fold-out list of every fish and cleanup crew member in the tank, with counts. |
+| **Lighting** | Daylight, Reef 20K, Actinic and Moon presets, and **Day cycle** for a slow loop through actinic dawn, day, actinic dusk and moonlight. |
+| **Expert: LED channels** | Separate sliders for UV 400 nm, violet 420 nm, royal blue 450 nm, blue 470 nm, cool white, green 520 nm, red 630 nm and master intensity, like a real reef light. |
+| **Haze** | How cloudy the water looks over distance. |
+| **Background** | What is behind the tank: black, blue or clear glass. |
+| **Quality** | Low, Medium or High detail. |
+| **Camera** | Front, corner, top, inside, follow a fish, or swim. |
+| **Save snapshot** | Downloads a picture of the current view. |
+| **Copy link** | Copies a link to this exact tank and reef, to share or come back to. |
+
+In the public exhibit, the size sliders and the background choice are hidden, because the exhibit has its own fixed gallery and window.
+
 ## Controls
 
 | Input | What it does |
@@ -113,10 +139,14 @@ A few easy things to change in `reef-studio.html`:
 
 Reload the page after an edit. Run `npm run build` when you want a fresh `index.html`.
 
+## Made by
+
+Reef Studio is made by [Robert Gourley](https://robertcreative.com). See more of my work at [robertcreative.com](https://robertcreative.com).
+
 ## License
 
 Creative Commons Attribution-NonCommercial 4.0 ([CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)). You may share and adapt it with credit, for non-commercial use. See `LICENSE`.
 
-© Robert Gourley
+© [Robert Gourley](https://robertcreative.com)
 
 If you enjoy it, you can [buy me a coffee](https://ko-fi.com/robertgourley).

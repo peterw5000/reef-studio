@@ -2207,12 +2207,20 @@ const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem('reef.'+k);v==
 const TN=['nano','home','large','exhibit'],QP=new URLSearchParams(Q),QI=TN.indexOf((QP.get('tank')||'').toLowerCase()),QS=parseInt(QP.get('seed')),QW=(QP.get('view')||'').toLowerCase(),QV=QW==='showcase'?'tour':['front','corner','top','inside','swim','follow'].includes(QW)?QW:'',GO=!AUTO&&(/[?&]go(=|&|$)/.test(Q)||QW==='showcase');   // direct links: ?tank=nano|home|large|exhibit &seed=N &view=showcase|front|corner|inside|swim|follow &go=1
 if(QS>0)P.seed=QS;
 const TK=[['Nano','45 cm cube · 24 gal',0.45,0.45,0.45],['Home','300 gal · 2.4 × 0.75 × 0.65 m',2.4,0.75,0.65],['Large','1,000 gal · 3.6 × 1.2 × 0.9 m',3.6,1.2,0.9],['Public exhibit','9 m window on a reef wall',9,5.5,4.5]];
-let look=false,lk=null,dirty=false,menu=!AUTO,ready=false,going=false,hud=false,pscale=1,pceil=1,pwait=0,best=99,fAcc=0,fN=0,fMax=0,fLast=0,AC=null,AM=null,muted=LS('snd')==='0',nearT=0,tp=null;
+let dslow=0,dfast=0,ddown=false,look=false,lk=null,dirty=false,menu=!AUTO,ready=false,going=false,hud=false,pscale=1,pceil=1,pwait=0,best=99,fAcc=0,fN=0,fMax=0,fLast=0,AC=null,AM=null,muted=LS('snd')==='0',nearT=0,tp=null;
 P.detail='high';
-if(!AUTO){const m=navigator.deviceMemory||8,c=navigator.hardwareConcurrency||8;let d=LS('detail')||(m<=4||c<=4?'low':TOUCH||m<8||c<8?'med':'high');
+// first guess from the graphics chip's name when the browser shares it, else from memory and cores
+function gpuGuess(){let r='';try{const g=renderer.getContext(),e=g.getExtension('WEBGL_debug_renderer_info');r=(e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER))||'';}catch(e){}
+  if(/swiftshader|llvmpipe|software|mali-[gt][0-7]\d|adreno[^0-9]*[1-5]\d\d|powervr|intel.*(hd|uhd) graphics/i.test(r))return 'low';
+  if(/nvidia|geforce|rtx|gtx|quadro|radeon (rx|pro)|intel.*arc|apple m\d/i.test(r))return TOUCH?'med':'high';
+  if(/apple gpu/i.test(r))return TOUCH?'med':'high';
+  if(/iris|radeon|adreno|mali|apple/i.test(r))return 'med';
+  return null;}
+if(!AUTO){const m=navigator.deviceMemory||8,c=navigator.hardwareConcurrency||8;let d=LS('detail')||gpuGuess()||(m<=4||c<=4?'low':TOUCH||m<8||c<8?'med':'high');
   if(LS('loading'))d=DL[Math.max(0,DL.indexOf(d)-1)];   // the last visit never finished loading: start one level lower
   P.detail=DL.includes(d)?d:'med';LS('detail',P.detail);LS('loading',null);}
-function setDetail(d){P.detail=d;LS('detail',d);pscale=pceil=1;applyQuality();}
+// auto: false once the visitor picks a level themselves; then the page never changes it
+function setDetail(d,auto){P.detail=d;LS('detail',d);if(!auto)LS('dmanual','1');pscale=pceil=1;best=99;dslow=0;applyQuality();}
 // start-screen tank cards
 function pickTank(i){const t=TK[i]||TK[1];[P.W,P.D,P.H]=t.slice(2);P.exh=i==3;LS('tank',i);syncUI();[...$('tanks').children].forEach((b,j)=>b.classList.toggle('on',j==i));dirty=ready;}
 $('tanks').innerHTML=TK.map(t=>{const w=Math.min(52,26*t[2]/t[4]),h=w*t[4]/t[2];return `<button><svg viewBox="0 0 60 30" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="${30-w/2}" y="${28-h}" width="${w}" height="${h}" rx="1"/><path d="M${30-w/2} ${28-h*0.86}h${w}" stroke-width="0.8"/></svg>${t[0]}<small>${t[1]}</small></button>`;}).join('');
@@ -2237,7 +2245,12 @@ $('keys').innerHTML=TOUCH?'<b>Look</b> drag to orbit · pinch to zoom<br><b>Swim
 renderer.info.autoReset=false;
 function frameStats(){const n=performance.now(),f=n-fLast;fLast=n;fAcc+=f;fN++;fMax=Math.max(fMax,f);if(fAcc<500)return;const a=fAcc/fN,i=renderer.info.render,c=renderer.domElement,ok=fMax<250;fAcc=fN=fMax=0;
   if(hud)$('hud').textContent=`${(1000/a).toFixed(0)} fps   ${a.toFixed(1)} ms\n${i.calls} draw calls   ${(i.triangles/1e6).toFixed(2)} M triangles\n${c.width} × ${c.height}   detail ${P.detail}${pscale<1?'   scale '+pscale.toFixed(1):''}`;
-  if(AUTO||!ok||document.hidden)return;best=Math.min(best,a);const tg=Math.max(17.5,best*1.3);pwait-=0.5;
+  if(AUTO||!ok||document.hidden)return;best=Math.min(best,a);const tg=Math.max(17.5,Math.min(best*1.3,30));   // relative to the best frame seen, but never accept worse than about 30 mspwait-=0.5;
+  const auto=!LS('dmanual')&&!tour&&!menu,i2=DL.indexOf(P.detail);
+  // still slow at half resolution for 4 s: one detail level down (remembered for the next visit)
+  if(auto&&pscale<=0.5&&a>tg*1.25&&i2>0){if((dslow+=0.5)>=4){ddown=true;setDetail(DL[i2-1],true);return;}}else dslow=0;
+  // lots of headroom at full resolution for 15 s, and never stepped down this visit: one level up
+  if(auto&&!ddown&&pscale>=1&&a<tg*0.45&&i2<2){if((dfast+=0.5)>=15){dfast=0;setDetail(DL[i2+1],true);return;}}else dfast=0;
   if(a>tg*1.25&&pscale>0.5){pscale=pceil=Math.max(0.5,pscale-0.1);pwait=3;applyQuality();}
   else if(a<tg&&pscale<1&&pwait<=0&&(pscale+0.05<pceil||pwait<-30)){pscale=Math.min(1,pscale+0.1);pceil=Math.max(pceil,pscale);pwait=3;applyQuality();}}
 // sound: pump hum, water swells and bubbles through a short reverb; amb() builds it into any context

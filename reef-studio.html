@@ -2174,8 +2174,8 @@ const TOUR_ALL=[
   {name:'pushin',dur:13,fov:34,pick:()=>T.spot.length?T.spot:T.corals.filter(q=>q.z>-T.D*0.1&&(T.ex||q.top<T.sandTop+T.hw*0.55)&&(!T.ex||Math.abs(q.x)<T.W*0.28&&q.y>T.sandTop+1.1)),
     f:(u,c,t,s)=>{const q=s.subject,k=ease(u);c.set(q.x*lerp(0.7,1,k),lerp(T.H*0.45,Math.min(q.top+0.04*T.sc,T.H*0.6),k),T.D/2+lerp(frontDist()*0.7,0.22*T.sc,k));t.set(q.x,(q.y+q.top)/2,q.z);}},
 ];
-// show order: nine slow pans in fifteen shots, with standing shots, a slow arc and a coral focus between them; cameras stay in the lower two thirds
-const TOUR_SETS={show:['establish','pan','lowpan','stand','pan2','panback','pushin','lowpan2','pan','orbit','panback','lowpan','stand','pan2','pullback'],follow:['track','school','glide','crab','clowns','lookup']};
+// show order: nine slow pans in sixteen shots, with standing shots, a slow arc, a coral focus and a hermit crab between them; cameras stay in the lower two thirds
+const TOUR_SETS={show:['establish','pan','lowpan','stand','pan2','panback','pushin','lowpan2','crab','pan','orbit','panback','lowpan','stand','pan2','pullback'],follow:['track','school','glide','crab','clowns','lookup']};
 function updateTour(dt){
   const TOUR=TOUR_SETS[P.tourSet||'show'].map(n=>TOUR_ALL.find(s=>s.name===n));
   tourT+=dt;let sh=TOUR[tourShot];

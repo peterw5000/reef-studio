@@ -2006,7 +2006,7 @@ function applyMicro(){if(!T)return;const c=camera.position,d=Math.hypot(Math.max
   for(const im of T.micro)im.count=Math.round(im.userData.n*k);}
 function applyQuality(){
   const d=P.detail,hi=d!=='low';P.quality=hi?'high':'low';applyMicro();
-  renderer.setPixelRatio(Math.min(devicePixelRatio,d==='high'?2:d==='med'?1.25:1)*pscale);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,d==='high'?1.5:d==='med'?1.25:1)*pscale);   // high caps at 1.5: on Retina screens 2 costs 4x the pixels for little visible gain
   sun.castShadow=hi;bloom.enabled=hi;ao.enabled=d==='high';
   onResize();
   document.querySelectorAll('#quality button,#detail button').forEach(b=>b.classList.toggle('on',b.dataset.v===d));
